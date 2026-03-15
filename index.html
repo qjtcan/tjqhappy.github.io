@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对村巡察工作信息化建设平台</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3"></script>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e40af;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e3a8a;
+            --secondary-color: #0ea5e9;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --content-bg: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --border-radius: 12px;
+            --font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            color: var(--text-primary);
+            background-color: var(--content-bg);
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            box-shadow: var(--card-shadow);
+            padding: 24px 0;
+            transition: var(--transition);
+        }
+        
+        .sidebar-item {
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+            margin: 0 8px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f1f5f9;
+            transform: translateX(4px);
+        }
+        
+        .sidebar-item.active {
+            background-color: #dbeafe;
+            color: var(--primary-color);
+            font-weight: 600;
+            border-left-color: var(--primary-color);
+        }
+        
+        .sidebar-item i {
+            margin-right: 12px;
+            width: 20px;
+            font-size: 18px;
+        }
+        
+        /* 内容区样式 */
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background-color: var(--content-bg);
+        }
+        
+        .module-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            color: var(--text-primary);
+        }
+        
+        .module-title i {
+            margin-right: 12px;
+            color: var(--primary-color);
+            font-size: 20px;
+        }
+        
+        /* 表格样式 */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 13px;
+        }
+        
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: var(--card-bg);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        /* 风险等级样式 */
+        .risk-level {
+            display: flex;
+            align-items: center;
+        }
+        
+        .risk-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .risk-high {
+            background-color: var(--danger-color);
+        }
+        
+        .risk-medium {
+            background-color: var(--warning-color);
+        }
+        
+        .risk-low {
+            background-color: var(--success-color);
+        }
+        
+        /* 预警卡片样式 */
+        .warning-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .warning-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+        
+        .warning-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .warning-card h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        
+        .warning-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* 筛选按钮样式 */
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: var(--card-bg);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .filter-btn:hover {
+            background-color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+        
+        /* 手机模拟样式 */
+        .mobile-container {
+            width: 450px;
+            margin: 0 auto;
+            background-color: #f9fafb;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            border: 12px solid #1e293b;
+        }
+        
+        .mobile-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .mobile-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .mobile-content {
+            padding: 20px;
+        }
+        
+        /* 手机标签样式 */
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+        
+        .tab-btn.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .finance-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .finance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .finance-item:last-child {
+            border-bottom: none;
+        }
+        
+        .btn-question {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .btn-question:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+        }
+        
+        /* 时间轴样式 */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--border-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        
+        .timeline-date {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .timeline-content {
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 状态徽章样式 */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background-color: #f1f5f9;
+            color: var(--text-secondary);
+        }
+        
+        .status-processing {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .status-reviewing {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        /* 抽屉样式 */
+        .drawer {
+            margin-top: 12px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        
+        .drawer:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background-color: #f1f5f9;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-light);
+            border-radius: 6px;
+            transition: width 0.6s ease-in-out;
+            background-image: linear-gradient(90deg, var(--primary-light), var(--secondary-color));
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        
+        .evidence-list {
+            list-style: none;
+        }
+        
+        .evidence-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+        
+        .evidence-item:hover {
+            background-color: #f8fafc;
+            padding-left: 12px;
+        }
+        
+        .evidence-item i {
+            margin-right: 12px;
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+        
+        /* 大屏样式 */
+        .dashboard {
+            background-color: #0f172a;
+            color: white;
+            padding: 24px;
+            border-radius: var(--border-radius);
+            height: 100%;
+            background-image: radial-gradient(circle at top right, rgba(30, 64, 175, 0.2), transparent),
+                              radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.2), transparent);
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background-color: rgba(30, 58, 138, 0.8);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.6);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 12px 0;
+            color: #ffffff;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .chart-container {
+            background-color: rgba(15, 23, 42, 0.8);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            height: 350px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .bottom-chart {
+            background-color: rgba(15, 23, 42, 0.8);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            height: 350px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 热力图模拟 */
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            height: 240px;
+        }
+        
+        .heatmap-cell {
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .cell-high {
+            background-color: #ef4444;
+        }
+        
+        .cell-medium {
+            background-color: #f59e0b;
+        }
+        
+        .cell-low {
+            background-color: #10b981;
+        }
+        
+        .cell-none {
+            background-color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <div 
+                    v-for="item in menuItems" 
+                    :key="item.id"
+                    class="sidebar-item" 
+                    :class="{ active: currentTab === item.id }"
+                    @click="currentTab = item.id"
+                >
+                    <i :class="item.icon"></i>
+                    {{ item.name }}
+                </div>
+            </div>
+            
+            <!-- 内容区 -->
+            <div class="content">
+                <!-- 村级画像 -->
+                <div id="villageModule" v-if="currentTab === 1">
+                    <div class="module-title">
+                        <i class="fas fa-village"></i>
+                        村级画像
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>村名</th>
+                                    <th>人口</th>
+                                    <th>面积（平方公里）</th>
+                                    <th>近三年项目总额（万元）</th>
+                                    <th>信访量（件）</th>
+                                    <th>风险等级</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="village in mockData.villages" :key="village.id">
+                                    <td>{{ village.name }}</td>
+                                    <td>{{ village.population }}</td>
+                                    <td>{{ village.area }}</td>
+                                    <td>{{ village.projectTotal }}</td>
+                                    <td>{{ village.petitionCount }}</td>
+                                    <td>
+                                        <div class="risk-level">
+                                            <div class="risk-dot" :class="'risk-' + (village.riskLevel === '高' ? 'high' : village.riskLevel === '中' ? 'medium' : 'low')"></div>
+                                            {{ village.riskLevel }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" @click="viewVillageDetail(village.id)">查看详情</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- 村庄详情 -->
+                    <div id="villageDetail" class="table-container" style="margin-top: 20px; display: none;">
+                        <div style="padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 id="villageName">村庄名称·详细信息</h3>
+                                <button class="btn btn-outline" onclick="hideVillageDetail()">返回列表</button>
+                            </div>
+                            
+                            <!-- 基础信息库 -->
+                            <div style="margin-bottom: 30px;">
+                                <h4 style="margin-bottom: 15px; color: var(--primary-color);">基础信息库</h4>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                    <div>
+                                        <p><strong>人口：</strong><span id="population">0</span>人</p>
+                                        <p><strong>面积：</strong><span id="area">0</span>平方公里</p>
+                                        <p><strong>风险等级：</strong>
+                                            <span class="risk-level">
+                                                <span id="riskDot" class="risk-dot risk-low"></span>
+                                                <span id="riskLevel">低</span>
+                                            </span>
+                                        </p>
+                                        <p><strong>风险评分：</strong><span id="riskScore">0</span>分</p>
+                                    </div>
+                                    <div>
+                                        <p><strong>党组织架构：</strong></p>
+                                        <ul style="list-style: none; padding-left: 20px;" id="partyStructure">
+                                            <li>党支部书记：--</li>
+                                            <li>副书记：--</li>
+                                            <li>委员：--</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 15px;">
+                                    <p><strong>村干部履历：</strong></p>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;" id="cadres">
+                                        <!-- 村干部信息将通过JavaScript动态添加 -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 财务信息库 -->
+                            <div style="margin-bottom: 30px;">
+                                <h4 style="margin-bottom: 15px; color: var(--primary-color);">财务信息库</h4>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                    <div>
+                                        <p><strong>资产：</strong><span id="assets">0</span>万元</p>
+                                        <p><strong>负债：</strong><span id="liabilities">0</span>万元</p>
+                                        <p><strong>收入：</strong><span id="income">0</span>万元</p>
+                                        <p><strong>支出：</strong><span id="expenditure">0</span>万元</p>
+                                    </div>
+                                    <div>
+                                        <p><strong>合同台账：</strong></p>
+                                        <ul style="list-style: none; padding-left: 20px;" id="contracts">
+                                            <!-- 合同信息将通过JavaScript动态添加 -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 项目信息库 -->
+                            <div style="margin-bottom: 30px;">
+                                <h4 style="margin-bottom: 15px; color: var(--primary-color);">项目信息库</h4>
+                                <div class="table-container">
+                                    <table id="projectsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>项目名称</th>
+                                                <th>中标单位</th>
+                                                <th>资金（万元）</th>
+                                                <th>进度（%）</th>
+                                                <th>年份</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="projectsBody">
+                                            <!-- 项目信息将通过JavaScript动态添加 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- 舆情信息库 -->
+                            <div>
+                                <h4 style="margin-bottom: 15px; color: var(--primary-color);">舆情信息库</h4>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                    <div>
+                                        <p><strong>信访举报记录：</strong></p>
+                                        <ul style="list-style: none; padding-left: 20px;" id="petitions">
+                                            <!-- 信访记录将通过JavaScript动态添加 -->
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p><strong>12345热线投诉关键词：</strong></p>
+                                        <ul style="list-style: none; padding-left: 20px;" id="hotline">
+                                            <!-- 热线投诉将通过JavaScript动态添加 -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    // 全局变量，存储村庄数据
+                    let villagesData = [];
+                    
+                    // 初始化村庄数据
+                    function initVillagesData(data) {
+                        villagesData = data;
+                        console.log('村庄数据初始化完成:', villagesData);
+                    }
+                    
+                    // 查看村庄详情
+                    function viewVillageDetail(id) {
+                        console.log('查看详情，ID:', id);
+                        const village = villagesData.find(v => v.id == id);
+                        if (village) {
+                            console.log('找到村庄:', village);
+                            
+                            // 填充基本信息
+                            document.getElementById('villageName').textContent = village.name + '·详细信息';
+                            document.getElementById('population').textContent = village.population;
+                            document.getElementById('area').textContent = village.area;
+                            document.getElementById('riskLevel').textContent = village.riskLevel;
+                            document.getElementById('riskScore').textContent = village.riskScore;
+                            
+                            // 设置风险等级样式
+                            const riskDot = document.getElementById('riskDot');
+                            riskDot.className = 'risk-dot';
+                            if (village.riskLevel === '高') {
+                                riskDot.classList.add('risk-high');
+                            } else if (village.riskLevel === '中') {
+                                riskDot.classList.add('risk-medium');
+                            } else {
+                                riskDot.classList.add('risk-low');
+                            }
+                            
+                            // 填充党组织架构
+                            const partyStructure = document.getElementById('partyStructure');
+                            partyStructure.innerHTML = `
+                                <li>党支部书记：${village.partyStructure.secretary}</li>
+                                <li>副书记：${village.partyStructure.deputySecretary}</li>
+                                <li>委员：${village.partyStructure.members.join('、')}</li>
+                            `;
+                            
+                            // 填充村干部履历
+                            const cadres = document.getElementById('cadres');
+                            cadres.innerHTML = '';
+                            village.村干部.forEach((cadre, index) => {
+                                const cadreDiv = document.createElement('div');
+                                cadreDiv.style.backgroundColor = '#f9fafb';
+                                cadreDiv.style.padding = '15px';
+                                cadreDiv.style.borderRadius = '8px';
+                                cadreDiv.innerHTML = `
+                                    <p><strong>姓名：</strong>${cadre.name}</p>
+                                    <p><strong>职务：</strong>${cadre.position}</p>
+                                    <p><strong>任期：</strong>${cadre.term}</p>
+                                    <p><strong>亲属关系：</strong>${cadre.relatives.join('、')}</p>
+                                `;
+                                cadres.appendChild(cadreDiv);
+                            });
+                            
+                            // 填充财务信息
+                            document.getElementById('assets').textContent = village.finance.assets;
+                            document.getElementById('liabilities').textContent = village.finance.liabilities;
+                            document.getElementById('income').textContent = village.finance.income;
+                            document.getElementById('expenditure').textContent = village.finance.expenditure;
+                            
+                            // 填充合同台账
+                            const contracts = document.getElementById('contracts');
+                            contracts.innerHTML = '';
+                            village.finance.contracts.forEach((contract, index) => {
+                                const li = document.createElement('li');
+                                li.textContent = `${contract.name} - ${contract.amount}万元 (${contract.date})`;
+                                contracts.appendChild(li);
+                            });
+                            
+                            // 填充项目信息
+                            const projectsBody = document.getElementById('projectsBody');
+                            projectsBody.innerHTML = '';
+                            village.projects.forEach((project, index) => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                                    <td>${project.name}</td>
+                                    <td>${project.unit}</td>
+                                    <td>${project.fund}</td>
+                                    <td>${project.progress}</td>
+                                    <td>${project.year}</td>
+                                `;
+                                projectsBody.appendChild(tr);
+                            });
+                            
+                            // 填充信访举报记录
+                            const petitions = document.getElementById('petitions');
+                            petitions.innerHTML = '';
+                            if (village.publicOpinion.petitions.length === 0) {
+                                const li = document.createElement('li');
+                                li.textContent = '无信访记录';
+                                petitions.appendChild(li);
+                            } else {
+                                village.publicOpinion.petitions.forEach((petition, index) => {
+                                    const li = document.createElement('li');
+                                    li.textContent = `${petition.content} (${petition.date})`;
+                                    petitions.appendChild(li);
+                                });
+                            }
+                            
+                            // 填充12345热线投诉关键词
+                            const hotline = document.getElementById('hotline');
+                            hotline.innerHTML = '';
+                            if (village.publicOpinion.hotline.length === 0) {
+                                const li = document.createElement('li');
+                                li.textContent = '无热线投诉';
+                                hotline.appendChild(li);
+                            } else {
+                                village.publicOpinion.hotline.forEach((item, index) => {
+                                    const li = document.createElement('li');
+                                    li.textContent = `${item.keyword}: ${item.count}次`;
+                                    hotline.appendChild(li);
+                                });
+                            }
+                            
+                            // 显示详情
+                            document.getElementById('villageDetail').style.display = 'block';
+                            console.log('详情显示成功');
+                        } else {
+                            console.error('未找到村庄:', id);
+                        }
+                    }
+                    
+                    // 隐藏村庄详情
+                    function hideVillageDetail() {
+                        document.getElementById('villageDetail').style.display = 'none';
+                        console.log('详情已隐藏');
+                    }
+                </script>
+                
+                <!-- 智能预警 -->
+                <div v-else-if="currentTab === 2">
+                    <div class="module-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        智能预警
+                    </div>
+                    
+                    <div class="filter-buttons">
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeFilter === '全部' }"
+                            @click="activeFilter = '全部'"
+                        >
+                            全部
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeFilter === '高' }"
+                            @click="activeFilter = '高'"
+                        >
+                            高
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeFilter === '中' }"
+                            @click="activeFilter = '中'"
+                        >
+                            中
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeFilter === '低' }"
+                            @click="activeFilter = '低'"
+                        >
+                            低
+                        </button>
+                    </div>
+                    
+                    <div class="warning-cards">
+                        <div v-for="warning in filteredWarnings" :key="warning.id" class="warning-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h3>{{ warning.title }}</h3>
+                                <span class="status-badge" :class="getWarningStatusClass(warning.status)">{{ warning.status || '未处理' }}</span>
+                            </div>
+                            <div class="warning-meta">
+                                <span>村庄：{{ warning.village }}</span>
+                                <div class="risk-level">
+                                    <div class="risk-dot" :class="'risk-' + (warning.level === '高' ? 'high' : warning.level === '中' ? 'medium' : 'low')"></div>
+                                    {{ warning.level }}
+                                </div>
+                            </div>
+                            <div class="warning-meta">
+                                <span>发现时间：{{ warning.date }}</span>
+                                <span>处理期限：{{ warning.deadline || '3个工作日' }}</span>
+                            </div>
+                            <div style="margin-top: 10px; font-size: 14px; color: var(--text-secondary);">
+                                {{ warning.details.description.substring(0, 50) }}...
+                            </div>
+                            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                <button class="btn btn-primary" @click="viewWarningDetail(warning.id)">查看详情</button>
+                                <button class="btn btn-outline" @click="markAsProcessing(warning.id)">开始处理</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 预警详情模态框 -->
+                    <div v-if="selectedWarning" class="modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+                        <div class="modal-content" style="background-color: white; border-radius: 8px; padding: 24px; width: 80%; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3>{{ selectedWarning.title }}·详情</h3>
+                                <button class="btn btn-outline" @click="selectedWarning = null">关闭</button>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                                    <div>
+                                        <p><strong>村庄：</strong>{{ selectedWarning.village }}</p>
+                                        <p><strong>风险等级：</strong>
+                                            <span class="risk-level">
+                                                <span class="risk-dot" :class="'risk-' + (selectedWarning.level === '高' ? 'high' : selectedWarning.level === '中' ? 'medium' : 'low')"></span>
+                                                {{ selectedWarning.level }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p><strong>发现时间：</strong>{{ selectedWarning.date }}</p>
+                                        <p><strong>处理状态：</strong><span class="status-badge" :class="getWarningStatusClass(selectedWarning.status)">{{ selectedWarning.status || '未处理' }}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 10px; color: var(--primary-color);">预警描述</h4>
+                                <p>{{ selectedWarning.details.description }}</p>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 10px; color: var(--primary-color);">相关事项</h4>
+                                <ul style="list-style: none; padding-left: 20px;">
+                                    <li v-for="(item, index) in selectedWarning.details.relatedItems" :key="index">• {{ item }}</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 10px; color: var(--primary-color);">风险点</h4>
+                                <ul style="list-style: none; padding-left: 20px;">
+                                    <li v-for="(point, index) in selectedWarning.details.riskPoints" :key="index">• {{ point }}</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="margin-bottom: 10px; color: var(--primary-color);">建议处理措施</h4>
+                                <p>{{ selectedWarning.details.suggestedAction }}</p>
+                            </div>
+                            
+                            <div style="margin-top: 24px; display: flex; gap: 8px; justify-content: flex-end;">
+                                <button class="btn btn-outline" @click="selectedWarning = null">关闭</button>
+                                <button class="btn btn-primary" @click="markAsCompleted(selectedWarning.id)">标记为已处理</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 码上互动 -->
+                <div v-else-if="currentTab === 3">
+                    <div class="module-title">
+                        <i class="fas fa-mobile-alt"></i>
+                        码上互动
+                    </div>
+                    
+                    <div class="mobile-container">
+                        <div class="mobile-header">
+                            <h3>阳光村务</h3>
+                        </div>
+                        <div class="mobile-content">
+                            <!-- 导航标签 -->
+                            <div style="display: flex; margin-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+                                <button 
+                                    v-for="tab in sunshineTabs" 
+                                    :key="tab.id"
+                                    class="tab-btn"
+                                    :class="{ active: activeSunshineTab === tab.id }"
+                                    @click="activeSunshineTab = tab.id"
+                                >
+                                    {{ tab.name }}
+                                </button>
+                            </div>
+                            
+                            <!-- 财务公开 -->
+                            <div v-if="activeSunshineTab === 'finance'">
+                                <h4>财务公开</h4>
+                                <div style="margin-bottom: 16px;">
+                                    <select v-model="selectedQuarter" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                                        <option 
+                                            v-for="quarter in mockData.sunshineVillage.finance.quarters" 
+                                            :key="quarter.year + '-' + quarter.quarter"
+                                            :value="quarter"
+                                        >
+                                            {{ quarter.year }}年第{{ quarter.quarter }}季度
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <div style="margin-bottom: 16px;">
+                                    <h5 style="margin-bottom: 8px;">收入</h5>
+                                    <div v-for="item in selectedQuarter.income" :key="item.id" class="finance-item">
+                                        <div>
+                                            <span style="font-weight: 500;">{{ item.type }}</span>
+                                            <span style="font-size: 12px; color: #6b7280; margin-left: 8px;">{{ item.date }}</span>
+                                            <p style="font-size: 12px; margin-top: 4px;">{{ item.description }}</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="margin-right: 12px; color: #10b981;">+{{ item.amount }}元</span>
+                                            <button class="btn-question" @click="showEvidence(item.voucher)">查看凭证</button>
+                                            <button class="btn-question" style="margin-left: 8px;" @click="submitQuestion('财务公开', item.description)">质疑</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h5 style="margin-bottom: 8px;">支出</h5>
+                                    <div v-for="item in selectedQuarter.expenditure" :key="item.id" class="finance-item">
+                                        <div>
+                                            <span style="font-weight: 500;">{{ item.type }}</span>
+                                            <span style="font-size: 12px; color: #6b7280; margin-left: 8px;">{{ item.date }}</span>
+                                            <p style="font-size: 12px; margin-top: 4px;">{{ item.description }}</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center;">
+                                            <span style="margin-right: 12px; color: #ef4444;">-{{ item.amount }}元</span>
+                                            <button class="btn-question" @click="showEvidence(item.voucher)">查看凭证</button>
+                                            <button class="btn-question" style="margin-left: 8px;" @click="submitQuestion('财务公开', item.description)">质疑</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 资产资源公开 -->
+                            <div v-else-if="activeSunshineTab === 'assets'">
+                                <h4>资产资源公开</h4>
+                                <div v-for="asset in mockData.sunshineVillage.assets" :key="asset.id" style="background-color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <h5 style="margin-bottom: 4px;">{{ asset.name }}</h5>
+                                            <p style="font-size: 12px; color: #6b7280;">{{ asset.type }} | {{ asset.location }}</p>
+                                        </div>
+                                        <span class="status-badge" :class="getAssetStatusClass(asset.status)">{{ asset.status }}</span>
+                                    </div>
+                                    <p style="font-size: 14px; margin-top: 8px;">估值：{{ asset.value }}元</p>
+                                    <div v-if="asset.status === '租赁中'" style="margin-top: 8px; font-size: 12px; color: #6b7280;">
+                                        <p>承租方：{{ asset.lessee }}</p>
+                                        <p>租金：{{ asset.rent }}元/年 | 状态：{{ asset.rentStatus }}</p>
+                                        <button class="btn-question" style="margin-top: 8px;" @click="showEvidence(asset.contract)">查看合同</button>
+                                    </div>
+                                    <button class="btn-question" style="margin-top: 8px;" @click="submitQuestion('资产资源公开', asset.name)">质疑</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 项目建设公开 -->
+                            <div v-else-if="activeSunshineTab === 'projects'">
+                                <h4>项目建设公开</h4>
+                                <div v-for="project in mockData.sunshineVillage.projects" :key="project.id" style="background-color: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                                    <h5 style="margin-bottom: 8px;">{{ project.name }}</h5>
+                                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">
+                                        <p>资金来源：{{ project.fundSource }}</p>
+                                        <p>预算金额：{{ project.budget }}元</p>
+                                        <p>中标单位：{{ project.winningUnit }}</p>
+                                        <p>工期：{{ project.startDate }} 至 {{ project.endDate }}</p>
+                                        <p>进度：{{ project.progress }}%</p>
+                                    </div>
+                                    <div v-if="project.验收Report" style="margin-top: 8px;">
+                                        <button class="btn-question" @click="showEvidence(project.验收Report)">查看验收报告</button>
+                                    </div>
+                                    <button class="btn-question" style="margin-top: 8px;" @click="submitQuestion('项目建设公开', project.name)">质疑</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 补贴发放公开 -->
+                            <div v-else-if="activeSunshineTab === 'subsidies'">
+                                <h4>补贴发放公开</h4>
+                                <div style="margin-bottom: 16px;">
+                                    <select v-model="selectedMonth" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                                        <option 
+                                            v-for="subsidy in mockData.sunshineVillage.subsidies" 
+                                            :key="subsidy.month"
+                                            :value="subsidy"
+                                        >
+                                            {{ subsidy.month }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div style="margin-bottom: 16px;">
+                                    <input 
+                                        type="text" 
+                                        v-model="subsidySearch" 
+                                        placeholder="按姓名搜索" 
+                                        style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"
+                                    >
+                                </div>
+                                <div v-for="item in filteredSubsidies" :key="item.id" style="background-color: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>{{ item.name }}</span>
+                                        <span>{{ item.type }}</span>
+                                        <span>{{ item.amount }}元</span>
+                                    </div>
+                                </div>
+                                <button class="btn-question" style="margin-top: 8px;" @click="submitQuestion('补贴发放公开', '补贴发放名单')">质疑</button>
+                            </div>
+                            
+                            <!-- 四议两公开 -->
+                            <div v-else-if="activeSunshineTab === 'fourDiscussions'">
+                                <h4>四议两公开</h4>
+                                <div v-for="discussion in mockData.sunshineVillage.fourDiscussions" :key="discussion.id" style="margin-bottom: 16px;">
+                                    <h5 style="margin-bottom: 8px;">{{ discussion.title }}</h5>
+                                    <div class="timeline">
+                                        <div v-for="(step, index) in discussion.流程" :key="index" class="timeline-item">
+                                            <div class="timeline-date">{{ step.date }}</div>
+                                            <div class="timeline-content">
+                                                <strong>{{ step.step }}</strong>
+                                                <p style="margin-top: 4px; font-size: 12px;">{{ step.content }}</p>
+                                                <div v-if="step.participants" style="margin-top: 4px; font-size: 12px; color: #6b7280;">
+                                                    参会人员：{{ step.participants.join('、') }}
+                                                </div>
+                                                <div v-if="step.attendees" style="margin-top: 4px; font-size: 12px; color: #6b7280;">
+                                                    到会人数：{{ step.attendees }}
+                                                </div>
+                                                <div v-if="step.votes" style="margin-top: 4px; font-size: 12px; color: #6b7280;">
+                                                    表决结果：赞成{{ step.votes.agree }}票，反对{{ step.votes.disagree }}票，弃权{{ step.votes.abstain }}票
+                                                </div>
+                                                <div v-if="step.startDate && step.endDate" style="margin-top: 4px; font-size: 12px; color: #6b7280;">
+                                                    公示时间：{{ step.startDate }} 至 {{ step.endDate }}
+                                                </div>
+                                                <div v-if="step.materials && step.materials.length > 0" style="margin-top: 8px;">
+                                                    <button class="btn-question" @click="showEvidence(step.materials[0])">查看材料</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn-question" style="margin-top: 8px;" @click="submitQuestion('四议两公开', discussion.title)">质疑</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 我要反映问题 -->
+                            <div v-else-if="activeSunshineTab === 'report'">
+                                <h4>我要反映问题</h4>
+                                <div style="background-color: white; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">问题类型</label>
+                                        <select v-model="reportType" style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                                            <option value="">请选择问题类型</option>
+                                            <option value="财务公开">财务公开</option>
+                                            <option value="资产资源公开">资产资源公开</option>
+                                            <option value="项目建设公开">项目建设公开</option>
+                                            <option value="补贴发放公开">补贴发放公开</option>
+                                            <option value="四议两公开">四议两公开</option>
+                                            <option value="其他">其他</option>
+                                        </select>
+                                    </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">问题描述</label>
+                                        <textarea 
+                                            v-model="reportContent" 
+                                            rows="4" 
+                                            placeholder="请详细描述您要反映的问题..." 
+                                            style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; resize: vertical;"
+                                        ></textarea>
+                                    </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">联系方式（选填）</label>
+                                        <input 
+                                            type="text" 
+                                            v-model="reportContact" 
+                                            placeholder="请留下您的联系方式，便于我们回复" 
+                                            style="width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px;"
+                                        >
+                                    </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: flex; align-items: center; font-weight: 500;">
+                                            <input type="checkbox" v-model="reportAnonymous" style="margin-right: 8px;">
+                                            匿名反映
+                                        </label>
+                                    </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;">上传图片</button>
+                                        <button class="btn btn-outline" style="width: 100%;">语音反映</button>
+                                    </div>
+                                    <button class="btn btn-primary" style="width: 100%;" @click="submitReport">提交反映</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 整改督办 -->
+                <div v-else-if="currentTab === 4">
+                    <div class="module-title">
+                        <i class="fas fa-tasks"></i>
+                        整改闭环督办系统
+                    </div>
+                    
+                    <!-- 统计卡片 -->
+                    <div class="stats-cards" style="margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <div class="stat-label">总问题数</div>
+                            <div class="stat-value">{{ mockData.issues.length }}</div>
+                            <div class="stat-label">件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">已整改</div>
+                            <div class="stat-value">{{ mockData.issues.filter(issue => issue.status === '已办结').length }}</div>
+                            <div class="stat-label">件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">整改中</div>
+                            <div class="stat-value">{{ mockData.issues.filter(issue => issue.status === '整改中').length }}</div>
+                            <div class="stat-label">件</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">整改完成率</div>
+                            <div class="stat-value">{{ Math.round((mockData.issues.filter(issue => issue.status === '已办结').length / mockData.issues.length) * 100) }}%</div>
+                            <div class="stat-label"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-buttons" style="margin-bottom: 16px;">
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeIssueFilter === '全部' }"
+                            @click="activeIssueFilter = '全部'"
+                        >
+                            全部
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeIssueFilter === '待签收' }"
+                            @click="activeIssueFilter = '待签收'"
+                        >
+                            待签收
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeIssueFilter === '整改中' }"
+                            @click="activeIssueFilter = '整改中'"
+                        >
+                            整改中
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeIssueFilter === '待审核' }"
+                            @click="activeIssueFilter = '待审核'"
+                        >
+                            待审核
+                        </button>
+                        <button 
+                            class="filter-btn" 
+                            :class="{ active: activeIssueFilter === '已办结' }"
+                            @click="activeIssueFilter = '已办结'"
+                        >
+                            已办结
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>问题标题</th>
+                                    <th>所属村</th>
+                                    <th>责任单位</th>
+                                    <th>状态</th>
+                                    <th>整改期限</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-for="issue in mockData.issues" :key="issue.id">
+                                    <tr v-if="activeIssueFilter === '全部' || issue.status === activeIssueFilter">
+                                        <td>{{ issue.title }}</td>
+                                        <td>{{ issue.village }}</td>
+                                        <td>{{ issue.responsibleUnit }}</td>
+                                        <td>
+                                            <span class="status-badge" :class="getStatusClass(issue.status)">{{ issue.status }}</span>
+                                        </td>
+                                        <td>{{ issue.deadline }}</td>
+                                        <td>
+                                            <button class="btn btn-outline" @click="toggleIssue(issue.id)">查看详情</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <template v-for="issue in mockData.issues" :key="'detail-' + issue.id">
+                        <div v-if="expandedIssue === issue.id" class="drawer">
+                        <h4>{{ issue.title }} - 整改详情</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div>
+                                <p><strong>所属村：</strong>{{ issue.village }}</p>
+                                <p><strong>责任单位：</strong>{{ issue.responsibleUnit }}</p>
+                                <p><strong>状态：</strong><span class="status-badge" :class="getStatusClass(issue.status)">{{ issue.status }}</span></p>
+                                <p><strong>整改期限：</strong>{{ issue.deadline }}</p>
+                            </div>
+                            <div>
+                                <p><strong>发现时间：</strong>{{ issue.discoverDate }}</p>
+                                <p><strong>移交时间：</strong>{{ issue.transferDate || '未移交' }}</p>
+                                <p><strong>签收时间：</strong>{{ issue.receiveDate || '未签收' }}</p>
+                                <p><strong>完成时间：</strong>{{ issue.completeDate || '未完成' }}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="margin-bottom: 8px;">问题描述</h5>
+                            <p>{{ issue.description }}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="margin-bottom: 8px;">整改进度</h5>
+                            <div class="progress-bar">
+                                <div class="progress-fill" :style="{ width: issue.progress + '%' }"></div>
+                            </div>
+                            <p>当前进度：{{ issue.progress }}%</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="margin-bottom: 8px;">佐证材料</h5>
+                            <ul class="evidence-list">
+                                <li v-for="(material, index) in issue.evidence" :key="index" class="evidence-item">
+                                    <i :class="getMaterialIcon(material.type)"></i>
+                                    <span>{{ material.name }}</span>
+                                    <button class="btn btn-outline" style="margin-left: auto; padding: 2px 8px; font-size: 12px;" @click="viewMaterial(material)">查看</button>
+                                </li>
+                                <li v-if="issue.evidence.length === 0" class="evidence-item">
+                                    <span>暂无佐证材料</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="margin-bottom: 8px;">整改记录</h5>
+                            <ul class="evidence-list">
+                                <li v-for="(record, index) in issue.records" :key="index" class="evidence-item">
+                                    <span style="font-size: 12px; color: #6b7280; margin-right: 12px;">{{ record.date }}</span>
+                                    <span>{{ record.content }}</span>
+                                </li>
+                                <li v-if="issue.records.length === 0" class="evidence-item">
+                                    <span>暂无整改记录</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div style="margin-top: 24px; display: flex; gap: 8px; justify-content: flex-end;">
+                            <button v-if="issue.status === '待签收'" class="btn btn-primary" @click="receiveIssue(issue.id)">签收</button>
+                            <button v-if="issue.status === '整改中'" class="btn btn-primary" @click="submitCorrection(issue.id)">提交整改</button>
+                            <button v-if="issue.status === '待审核'" class="btn btn-primary" @click="approveCorrection(issue.id)">审核通过</button>
+                            <button v-if="issue.status === '待审核'" class="btn btn-outline" @click="rejectCorrection(issue.id)">退回</button>
+                        </div>
+                        </div>
+                    </template>
+                </div>
+                
+                <!-- 可视化大屏 -->
+                <div v-else-if="currentTab === 5">
+                    <div class="dashboard">
+                        <div class="module-title" style="color: white;">
+                            <i class="fas fa-chart-pie"></i>
+                            可视化大屏
+                        </div>
+                        
+                        <div class="stats-cards">
+                            <div class="stat-card">
+                                <div class="stat-label">总村数</div>
+                                <div class="stat-value">{{ mockData.villages.length }}</div>
+                                <div class="stat-label">个</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">高风险村数</div>
+                                <div class="stat-value">{{ mockData.villages.filter(v => v.riskLevel === '高').length }}</div>
+                                <div class="stat-label">个</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">今日预警数</div>
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">件</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">整改完成率</div>
+                                <div class="stat-value">25%</div>
+                                <div class="stat-label"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-row">
+                            <div class="chart-container">
+                                <div class="chart-title">郑州地理地图</div>
+                                <div ref="mapChart" style="width: 100%; height: 240px;"></div>
+                            </div>
+                            <div class="chart-container">
+                                <div class="chart-title">预警趋势</div>
+                                <div ref="trendChart" style="width: 100%; height: 240px;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bottom-chart">
+                            <div class="chart-title">群众参与度</div>
+                            <div ref="participationChart" style="width: 100%; height: 240px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局数据对象
+        const mockData = {
+            villages: [
+                {
+                    id: 1, 
+                    name: '东村', 
+                    population: 1200, 
+                    area: 5.2, 
+                    projectTotal: 500, 
+                    petitionCount: 3, 
+                    riskLevel: '高', 
+                    riskScore: 85,
+                    partyStructure: {
+                        secretary: '张三',
+                        deputySecretary: '李四',
+                        members: ['王五', '赵六', '孙七']
+                    },
+                   村干部: [
+                        {
+                            name: '张三',
+                            position: '村支书',
+                            term: '2022-2025',
+                            relatives: ['张四(兄弟)', '张五(侄子)']
+                        },
+                        {
+                            name: '李四',
+                            position: '村长',
+                            term: '2022-2025',
+                            relatives: ['李三(兄弟)', '李六(儿子)']
+                        }
+                    ],
+                    finance: {
+                        assets: 1200,
+                        liabilities: 300,
+                        income: 250,
+                        expenditure: 200,
+                        contracts: [
+                            { name: '土地租赁', amount: 50, date: '2024-01-15' },
+                            { name: '工程承包', amount: 150, date: '2024-02-20' }
+                        ]
+                    },
+                    projects: [
+                        { name: '道路硬化', unit: '河南建筑公司', fund: 200, progress: 100, year: 2024 },
+                        { name: '水利工程', unit: '水利建设公司', fund: 150, progress: 80, year: 2023 },
+                        { name: '文化广场', unit: '市政工程公司', fund: 100, progress: 100, year: 2022 }
+                    ],
+                    publicOpinion: {
+                        petitions: [
+                            { id: 1, content: '土地分配问题', date: '2024-03-10' },
+                            { id: 2, content: '财务公开问题', date: '2024-02-15' },
+                            { id: 3, content: '干部作风问题', date: '2024-01-20' }
+                        ],
+                        hotline: [
+                            { id: 1, keyword: '土地', count: 5 },
+                            { id: 2, keyword: '财务', count: 3 },
+                            { id: 3, keyword: '干部', count: 2 }
+                        ]
+                    }
+                },
+                {
+                    id: 2, 
+                    name: '西村', 
+                    population: 980, 
+                    area: 4.5, 
+                    projectTotal: 350, 
+                    petitionCount: 1, 
+                    riskLevel: '中', 
+                    riskScore: 65,
+                    partyStructure: {
+                        secretary: '刘八',
+                        deputySecretary: '陈九',
+                        members: ['周十', '吴一', '郑二']
+                    },
+                   村干部: [
+                        {
+                            name: '刘八',
+                            position: '村支书',
+                            term: '2022-2025',
+                            relatives: ['刘七(兄弟)', '刘九(儿子)']
+                        },
+                        {
+                            name: '陈九',
+                            position: '村长',
+                            term: '2022-2025',
+                            relatives: ['陈八(兄弟)', '陈十(女儿)']
+                        }
+                    ],
+                    finance: {
+                        assets: 800,
+                        liabilities: 200,
+                        income: 180,
+                        expenditure: 150,
+                        contracts: [
+                            { name: '果园承包', amount: 80, date: '2024-01-10' },
+                            { name: '鱼塘租赁', amount: 30, date: '2024-02-15' }
+                        ]
+                    },
+                    projects: [
+                        { name: '农田灌溉', unit: '水利建设公司', fund: 120, progress: 100, year: 2024 },
+                        { name: '路灯安装', unit: '电力工程公司', fund: 80, progress: 100, year: 2023 },
+                        { name: '垃圾处理', unit: '环保科技公司', fund: 50, progress: 90, year: 2022 }
+                    ],
+                    publicOpinion: {
+                        petitions: [
+                            { id: 1, content: '农田灌溉问题', date: '2024-03-05' }
+                        ],
+                        hotline: [
+                            { id: 1, keyword: '灌溉', count: 3 },
+                            { id: 2, keyword: '路灯', count: 2 }
+                        ]
+                    }
+                },
+                {
+                    id: 3, 
+                    name: '南村', 
+                    population: 1500, 
+                    area: 6.8, 
+                    projectTotal: 800, 
+                    petitionCount: 5, 
+                    riskLevel: '高', 
+                    riskScore: 90,
+                    partyStructure: {
+                        secretary: '王三',
+                        deputySecretary: '赵四',
+                        members: ['孙五', '周六', '吴七']
+                    },
+                   村干部: [
+                        {
+                            name: '王三',
+                            position: '村支书',
+                            term: '2022-2025',
+                            relatives: ['王二(兄弟)', '王五(儿子)']
+                        },
+                        {
+                            name: '赵四',
+                            position: '村长',
+                            term: '2022-2025',
+                            relatives: ['赵三(兄弟)', '赵六(女儿)']
+                        }
+                    ],
+                    finance: {
+                        assets: 1500,
+                        liabilities: 400,
+                        income: 320,
+                        expenditure: 280,
+                        contracts: [
+                            { name: '商业用地租赁', amount: 120, date: '2024-01-20' },
+                            { name: '物流园建设', amount: 200, date: '2024-02-25' }
+                        ]
+                    },
+                    projects: [
+                        { name: '产业园区', unit: '产业发展公司', fund: 300, progress: 70, year: 2024 },
+                        { name: '道路拓宽', unit: '公路工程公司', fund: 200, progress: 100, year: 2023 },
+                        { name: '安置房建设', unit: '建筑工程公司', fund: 250, progress: 90, year: 2022 },
+                        { name: '学校翻新', unit: '教育建筑公司', fund: 50, progress: 100, year: 2021 }
+                    ],
+                    publicOpinion: {
+                        petitions: [
+                            { id: 1, content: '征地补偿问题', date: '2024-03-15' },
+                            { id: 2, content: '项目招标问题', date: '2024-03-10' },
+                            { id: 3, content: '财务公开问题', date: '2024-02-25' },
+                            { id: 4, content: '干部作风问题', date: '2024-02-20' },
+                            { id: 5, content: '土地分配问题', date: '2024-02-15' }
+                        ],
+                        hotline: [
+                            { id: 1, keyword: '征地', count: 8 },
+                            { id: 2, keyword: '招标', count: 5 },
+                            { id: 3, keyword: '财务', count: 4 },
+                            { id: 4, keyword: '干部', count: 3 }
+                        ]
+                    }
+                },
+                {
+                    id: 4, 
+                    name: '北村', 
+                    population: 850, 
+                    area: 3.9, 
+                    projectTotal: 200, 
+                    petitionCount: 0, 
+                    riskLevel: '低', 
+                    riskScore: 45,
+                    partyStructure: {
+                        secretary: '郑五',
+                        deputySecretary: '王六',
+                        members: ['赵七', '孙八', '周九']
+                    },
+                   村干部: [
+                        {
+                            name: '郑五',
+                            position: '村支书',
+                            term: '2022-2025',
+                            relatives: ['郑四(兄弟)', '郑六(儿子)']
+                        },
+                        {
+                            name: '王六',
+                            position: '村长',
+                            term: '2022-2025',
+                            relatives: ['王五(兄弟)', '王七(女儿)']
+                        }
+                    ],
+                    finance: {
+                        assets: 600,
+                        liabilities: 150,
+                        income: 120,
+                        expenditure: 100,
+                        contracts: [
+                            { name: '林地承包', amount: 40, date: '2024-01-10' },
+                            { name: '养殖场租赁', amount: 30, date: '2024-02-15' }
+                        ]
+                    },
+                    projects: [
+                        { name: '饮水工程', unit: '水利建设公司', fund: 80, progress: 100, year: 2023 },
+                        { name: '村道维修', unit: '公路工程公司', fund: 60, progress: 100, year: 2022 },
+                        { name: '卫生室建设', unit: '建筑工程公司', fund: 60, progress: 100, year: 2021 }
+                    ],
+                    publicOpinion: {
+                        petitions: [],
+                        hotline: [
+                            { id: 1, keyword: '饮水', count: 2 },
+                            { id: 2, keyword: '医疗', count: 1 }
+                        ]
+                    }
+                },
+                {
+                    id: 5, 
+                    name: '中村', 
+                    population: 1100, 
+                    area: 4.8, 
+                    projectTotal: 450, 
+                    petitionCount: 2, 
+                    riskLevel: '中', 
+                    riskScore: 70,
+                    partyStructure: {
+                        secretary: '孙十',
+                        deputySecretary: '周十一',
+                        members: ['吴十二', '郑十三', '王十四']
+                    },
+                   村干部: [
+                        {
+                            name: '孙十',
+                            position: '村支书',
+                            term: '2022-2025',
+                            relatives: ['孙九(兄弟)', '孙十一(儿子)']
+                        },
+                        {
+                            name: '周十一',
+                            position: '村长',
+                            term: '2022-2025',
+                            relatives: ['周十(兄弟)', '周十二(女儿)']
+                        }
+                    ],
+                    finance: {
+                        assets: 900,
+                        liabilities: 250,
+                        income: 200,
+                        expenditure: 180,
+                        contracts: [
+                            { name: '农产品收购', amount: 60, date: '2024-01-15' },
+                            { name: '农机设备租赁', amount: 40, date: '2024-02-20' }
+                        ]
+                    },
+                    projects: [
+                        { name: '农业大棚', unit: '农业科技公司', fund: 150, progress: 100, year: 2024 },
+                        { name: '机耕道建设', unit: '公路工程公司', fund: 100, progress: 100, year: 2023 },
+                        { name: '文化活动室', unit: '建筑工程公司', fund: 80, progress: 95, year: 2022 },
+                        { name: '灌溉渠道', unit: '水利建设公司', fund: 120, progress: 100, year: 2021 }
+                    ],
+                    publicOpinion: {
+                        petitions: [
+                            { id: 1, content: '农业补贴问题', date: '2024-03-10' },
+                            { id: 2, content: '道路维修问题', date: '2024-02-25' }
+                        ],
+                        hotline: [
+                            { id: 1, keyword: '补贴', count: 4 },
+                            { id: 2, keyword: '道路', count: 3 }
+                        ]
+                    }
+                }
+            ],
+            warnings: [
+                {
+                    id: 1, 
+                    title: '财务异常预警', 
+                    village: '东村', 
+                    level: '高', 
+                    date: '2025-03-15',
+                    details: {
+                        description: '发现东村2025年2月财务支出异常，存在多笔未按规定程序审批的支出',
+                        relatedItems: ['办公用品采购12000元', '餐饮费用8000元', '交通费用5000元'],
+                        riskPoints: ['未按规定程序审批', '支出金额较大', '无详细明细'],
+                        suggestedAction: '立即开展财务审计，核实支出真实性，对相关责任人进行问责'
+                    }
+                },
+                {
+                    id: 2, 
+                    title: '工程项目未公开', 
+                    village: '南村', 
+                    level: '高', 
+                    date: '2025-03-14',
+                    details: {
+                        description: '南村2025年第一季度实施的道路硬化工程未按规定进行公开招标',
+                        relatedItems: ['道路硬化工程', '预算金额30万元'],
+                        riskPoints: ['未公开招标', '未公示项目信息', '可能存在利益输送'],
+                        suggestedAction: '暂停工程施工，重新组织公开招标，对相关责任人进行调查'
+                    }
+                },
+                {
+                    id: 3, 
+                    title: '惠农补贴发放不及时', 
+                    village: '西村', 
+                    level: '中', 
+                    date: '2025-03-13',
+                    details: {
+                        description: '西村2025年2月的惠农补贴未按时发放到村民账户',
+                        relatedItems: ['种粮补贴', '农资补贴', '低保补贴'],
+                        riskPoints: ['发放不及时', '信息公示不全', '村民满意度低'],
+                        suggestedAction: '立即发放补贴，公开补贴发放明细，对相关责任人进行批评教育'
+                    }
+                },
+                {
+                    id: 4, 
+                    title: '三资管理不规范', 
+                    village: '中村', 
+                    level: '中', 
+                    date: '2025-03-12',
+                    details: {
+                        description: '中村集体资产台账不完整，存在资产底数不清的问题',
+                        relatedItems: ['集体土地', '集体房屋', '集体设备'],
+                        riskPoints: ['台账不完整', '资产底数不清', '管理责任不明确'],
+                        suggestedAction: '开展资产清查，建立健全台账，明确管理责任'
+                    }
+                },
+                {
+                    id: 5, 
+                    title: '信访量异常增长', 
+                    village: '东村', 
+                    level: '低', 
+                    date: '2025-03-11',
+                    details: {
+                        description: '东村近一个月信访量较上月增长50%，主要集中在土地分配问题',
+                        relatedItems: ['土地分配', '宅基地纠纷', '集体收益分配'],
+                        riskPoints: ['信访量增长', '问题集中', '可能存在不稳定因素'],
+                        suggestedAction: '及时处理信访问题，开展矛盾排查，加强政策宣传'
+                    }
+                }
+            ],
+            issues: [
+                {
+                    id: 1, 
+                    title: '财务公开不及时', 
+                    village: '东村', 
+                    status: '待签收', 
+                    progress: 0,
+                    responsibleUnit: '东村村委会',
+                    deadline: '2026-04-16',
+                    discoverDate: '2026-03-16',
+                    description: '东村财务公开不及时，未按规定时间公开2026年第一季度财务信息',
+                    evidence: [],
+                    records: []
+                },
+                {
+                    id: 2, 
+                    title: '工程项目未招标', 
+                    village: '南村', 
+                    status: '整改中', 
+                    progress: 60,
+                    responsibleUnit: '南村村委会',
+                    deadline: '2026-04-10',
+                    discoverDate: '2026-03-10',
+                    transferDate: '2026-03-12',
+                    receiveDate: '2026-03-13',
+                    description: '南村2026年第一季度实施的道路硬化工程未按规定进行公开招标',
+                    evidence: [
+                        { name: '工程现场照片.jpg', type: 'image' },
+                        { name: '会议记录.docx', type: 'word' }
+                    ],
+                    records: [
+                        { date: '2026-03-13', content: '责任单位已签收，开始整改' },
+                        { date: '2026-03-15', content: '召开整改会议，制定整改方案' },
+                        { date: '2026-03-20', content: '完成工程招标程序' }
+                    ]
+                },
+                {
+                    id: 3, 
+                    title: '惠农补贴发放错误', 
+                    village: '西村', 
+                    status: '待审核', 
+                    progress: 100,
+                    responsibleUnit: '西村村委会',
+                    deadline: '2026-04-05',
+                    discoverDate: '2026-03-05',
+                    transferDate: '2026-03-07',
+                    receiveDate: '2026-03-08',
+                    description: '西村2026年2月的惠农补贴发放存在错误，部分村民未收到补贴',
+                    evidence: [
+                        { name: '补贴发放名单.xlsx', type: 'excel' },
+                        { name: '整改报告.pdf', type: 'pdf' },
+                        { name: '银行转账记录.jpg', type: 'image' }
+                    ],
+                    records: [
+                        { date: '2026-03-08', content: '责任单位已签收，开始整改' },
+                        { date: '2026-03-10', content: '核实补贴发放情况' },
+                        { date: '2026-03-15', content: '重新发放补贴' },
+                        { date: '2026-03-20', content: '提交整改报告，等待审核' }
+                    ]
+                },
+                {
+                    id: 4, 
+                    title: '三资台账不完整', 
+                    village: '中村', 
+                    status: '已办结', 
+                    progress: 100,
+                    responsibleUnit: '中村村委会',
+                    deadline: '2026-03-20',
+                    discoverDate: '2026-03-01',
+                    transferDate: '2026-03-03',
+                    receiveDate: '2026-03-04',
+                    completeDate: '2026-03-18',
+                    description: '中村集体资产台账不完整，存在资产底数不清的问题',
+                    evidence: [
+                        { name: '资产清查报告.pdf', type: 'pdf' },
+                        { name: '新台账.xlsx', type: 'excel' }
+                    ],
+                    records: [
+                        { date: '2026-03-04', content: '责任单位已签收，开始整改' },
+                        { date: '2026-03-05', content: '开展资产清查' },
+                        { date: '2026-03-15', content: '建立健全台账' },
+                        { date: '2026-03-16', content: '提交整改报告，等待审核' },
+                        { date: '2026-03-18', content: '巡察办审核通过，问题已办结' }
+                    ]
+                },
+                {
+                    id: 5, 
+                    title: '信访处理不及时', 
+                    village: '东村', 
+                    status: '整改中', 
+                    progress: 40,
+                    responsibleUnit: '东村村委会',
+                    deadline: '2026-04-20',
+                    discoverDate: '2026-03-15',
+                    transferDate: '2026-03-17',
+                    receiveDate: '2026-03-18',
+                    description: '东村信访处理不及时，部分信访件超过规定处理时限',
+                    evidence: [
+                        { name: '信访件记录.docx', type: 'word' },
+                        { name: '处理情况说明.pdf', type: 'pdf' }
+                    ],
+                    records: [
+                        { date: '2026-03-18', content: '责任单位已签收，开始整改' },
+                        { date: '2026-03-20', content: '梳理未处理信访件' }
+                    ]
+                }
+            ],
+            trend: [5, 8, 12, 9, 15, 10],
+            participation: [
+                { village: '东村', access: 120, report: 15 },
+                { village: '西村', access: 95, report: 8 },
+                { village: '南村', access: 150, report: 20 },
+                { village: '北村', access: 80, report: 5 },
+                { village: '中村', access: 105, report: 12 }
+            ],
+            // 阳光村务数据
+            sunshineVillage: {
+                // 财务公开
+                finance: {
+                    quarters: [
+                        {
+                            year: 2025,
+                            quarter: 1,
+                            income: [
+                                { id: 1, type: '补助收入', amount: 50000, date: '2025-01-15', description: '上级财政补助', voucher: 'voucher1.jpg' },
+                                { id: 2, type: '发包收入', amount: 20000, date: '2025-02-10', description: '鱼塘承包费', voucher: 'voucher2.jpg' }
+                            ],
+                            expenditure: [
+                                { id: 1, type: '办公经费', amount: 5000, date: '2025-03-10', description: '购买办公用品', voucher: 'voucher3.jpg' },
+                                { id: 2, type: '基础设施建设', amount: 30000, date: '2025-03-15', description: '村内道路硬化', voucher: 'voucher4.jpg' }
+                            ]
+                        }
+                    ]
+                },
+                // 资产资源公开
+                assets: [
+                    { id: 1, name: '村集体办公楼', type: '固定资产', status: '使用中', value: 500000, location: '村中心' },
+                    { id: 2, name: '鱼塘', type: '资源', status: '租赁中', value: 100000, location: '村东', lessee: '张三', rent: 5000, rentStatus: '已收缴', contract: 'contract1.jpg' },
+                    { id: 3, name: '山林', type: '资源', status: '闲置', value: 200000, location: '村西' }
+                ],
+                // 项目建设公开
+                projects: [
+                    {
+                        id: 1,
+                        name: '村内道路硬化工程',
+                        fundSource: '上级财政+村集体',
+                        budget: 100000,
+                        winningUnit: '河南建筑公司',
+                        progress: 100,
+                        startDate: '2025-03-01',
+                        endDate: '2025-04-15',
+                       验收Report: '验收报告.pdf'
+                    },
+                    {
+                        id: 2,
+                        name: '文化广场建设',
+                        fundSource: '上级财政',
+                        budget: 80000,
+                        winningUnit: '市政工程公司',
+                        progress: 70,
+                        startDate: '2025-04-01',
+                        endDate: '2025-05-30',
+                       验收Report: ''
+                    }
+                ],
+                // 补贴发放公开
+                subsidies: [
+                    {
+                        month: '2025-03',
+                        list: [
+                            { id: 1, name: '张三', type: '低保', amount: 500 },
+                            { id: 2, name: '李四', type: '五保', amount: 800 },
+                            { id: 3, name: '王五', type: '耕地地力补贴', amount: 300 }
+                        ]
+                    }
+                ],
+                // 四议两公开
+                fourDiscussions: [
+                    {
+                        id: 1,
+                        title: '村内道路硬化工程',
+                       流程: [
+                            {
+                                step: '党支部提议',
+                                date: '2025-03-01',
+                                content: '提议实施村内道路硬化工程',
+                                proposer: '张三',
+                                materials: ['meeting1.jpg']
+                            },
+                            {
+                                step: '两委商议',
+                                date: '2025-03-03',
+                                content: '确定工程方案和预算',
+                                participants: ['张三', '李四', '王五'],
+                                result: '同意实施',
+                                materials: ['meeting2.jpg']
+                            },
+                            {
+                                step: '党员大会审议',
+                                date: '2025-03-05',
+                                content: '审议工程方案',
+                                attendees: 25,
+                                result: '通过',
+                                materials: ['meeting3.jpg']
+                            },
+                            {
+                                step: '村民代表会议决议',
+                                date: '2025-03-08',
+                                content: '决议批准工程实施',
+                                attendees: 30,
+                                votes: { agree: 28, disagree: 1, abstain: 1 },
+                                materials: ['meeting4.jpg', 'signin.jpg']
+                            },
+                            {
+                                step: '决议公开',
+                                date: '2025-03-10',
+                                content: '在村务公开栏公示决议结果',
+                                startDate: '2025-03-10',
+                                endDate: '2025-03-17',
+                                materials: ['public1.jpg']
+                            },
+                            {
+                                step: '实施结果公开',
+                                date: '2025-04-15',
+                                content: '工程完成情况',
+                                materials: ['public2.jpg', '验收报告.pdf']
+                            }
+                        ]
+                    }
+                ],
+                // 质疑记录
+                questions: [
+                    {
+                        id: 1,
+                        type: '财务公开',
+                        content: '这笔办公用品支出金额好像不对',
+                        date: '2025-03-12',
+                        status: '已答复',
+                        reply: '经核实，该笔支出为购买办公室设备，金额正确。'
+                    }
+                ]
+            }
+        };
+        
+        // 主应用
+        const { createApp } = Vue;
+        const app = createApp({
+            data() {
+                return {
+                    currentTab: 1,
+                    activeFilter: '全部',
+                    expandedIssue: null,
+                    selectedVillage: null,
+                    selectedWarning: null,
+                    // 阳光村务相关状态
+                    activeSunshineTab: 'finance',
+                    selectedQuarter: null,
+                    selectedMonth: null,
+                    subsidySearch: '',
+                    reportType: '',
+                    reportContent: '',
+                    reportContact: '',
+                    reportAnonymous: false,
+                    // 整改督办相关状态
+                    activeIssueFilter: '全部',
+                    // 阳光村务标签
+                    sunshineTabs: [
+                        { id: 'finance', name: '财务公开' },
+                        { id: 'assets', name: '资产资源' },
+                        { id: 'projects', name: '项目建设' },
+                        { id: 'subsidies', name: '补贴发放' },
+                        { id: 'fourDiscussions', name: '四议两公开' },
+                        { id: 'report', name: '我要反映' }
+                    ],
+                    menuItems: [
+                        { id: 1, name: '村级画像', icon: 'fas fa-village' },
+                        { id: 2, name: '智能预警', icon: 'fas fa-exclamation-triangle' },
+                        { id: 3, name: '码上互动', icon: 'fas fa-mobile-alt' },
+                        { id: 4, name: '整改督办', icon: 'fas fa-tasks' },
+                        { id: 5, name: '可视化大屏', icon: 'fas fa-chart-pie' }
+                    ],
+                    mockData: mockData
+                };
+            },
+            computed: {
+                filteredSubsidies() {
+                    if (!this.selectedMonth) return [];
+                    if (!this.subsidySearch) return this.selectedMonth.list;
+                    return this.selectedMonth.list.filter(item => 
+                        item.name.includes(this.subsidySearch)
+                    );
+                },
+                filteredIssues() {
+                    if (this.activeIssueFilter === '全部') {
+                        return this.mockData.issues;
+                    }
+                    return this.mockData.issues.filter(issue => issue.status === this.activeIssueFilter);
+                },
+                filteredWarnings() {
+                    if (this.activeFilter === '全部') {
+                        return this.mockData.warnings;
+                    }
+                    return this.mockData.warnings.filter(warning => warning.level === this.activeFilter);
+                }
+            },
+            mounted() {
+                // 初始化村庄数据
+                initVillagesData(this.mockData.villages);
+                
+                // 初始化图表
+                this.showFallbackContent();
+                
+                // 初始化阳光村务默认选中项
+                if (this.mockData.sunshineVillage.finance.quarters.length > 0) {
+                    this.selectedQuarter = this.mockData.sunshineVillage.finance.quarters[0];
+                }
+                if (this.mockData.sunshineVillage.subsidies.length > 0) {
+                    this.selectedMonth = this.mockData.sunshineVillage.subsidies[0];
+                }
+            },
+            methods: {
+                viewVillageDetail(id) {
+                    console.log('Vue查看详情，ID:', id);
+                    // 调用全局的viewVillageDetail函数
+                    if (window.viewVillageDetail) {
+                        window.viewVillageDetail(id);
+                    } else {
+                        console.error('全局viewVillageDetail函数未定义');
+                    }
+                },
+                viewWarningDetail(id) {
+                    console.log('查看预警详情，ID:', id);
+                    this.selectedWarning = this.mockData.warnings.find(warning => warning.id === id);
+                    console.log('选中的预警:', this.selectedWarning);
+                },
+                markAsProcessing(id) {
+                    console.log('标记为处理中，ID:', id);
+                    const warning = this.mockData.warnings.find(warning => warning.id === id);
+                    if (warning) {
+                        warning.status = '处理中';
+                        alert('已标记为处理中');
+                    }
+                },
+                markAsCompleted(id) {
+                    console.log('标记为已处理，ID:', id);
+                    const warning = this.mockData.warnings.find(warning => warning.id === id);
+                    if (warning) {
+                        warning.status = '已处理';
+                        this.selectedWarning = null;
+                        alert('已标记为已处理');
+                    }
+                },
+                getWarningStatusClass(status) {
+                    switch (status) {
+                        case '未处理': return 'status-pending';
+                        case '处理中': return 'status-processing';
+                        case '已处理': return 'status-completed';
+                        default: return 'status-pending';
+                    }
+                },
+                getStatusClass(status) {
+                    switch (status) {
+                        case '待签收': return 'status-pending';
+                        case '整改中': return 'status-processing';
+                        case '待审核': return 'status-reviewing';
+                        case '已办结': return 'status-completed';
+                        default: return '';
+                    }
+                },
+                toggleIssue(id) {
+                    console.log('======== toggleIssue 被调用 ========');
+                    console.log('传入的ID:', id);
+                    console.log('当前展开的ID:', this.expandedIssue);
+                    console.log('Vue实例:', this);
+                    
+                    if (this.expandedIssue === id) {
+                        this.expandedIssue = null;
+                        console.log('已关闭问题详情');
+                    } else {
+                        this.expandedIssue = id;
+                        console.log('已展开问题详情，ID:', id);
+                    }
+                    
+                    console.log('新的expandedIssue值:', this.expandedIssue);
+                    console.log('================================');
+                },
+                // 阳光村务相关方法
+                getAssetStatusClass(status) {
+                    switch (status) {
+                        case '闲置': return 'status-pending';
+                        case '租赁中': return 'status-processing';
+                        case '已处置': return 'status-completed';
+                        default: return '';
+                    }
+                },
+                showEvidence(evidence) {
+                    // 模拟显示凭证
+                    alert('查看凭证：' + evidence);
+                },
+                submitQuestion(type, content) {
+                    // 模拟提交质疑
+                    const question = prompt('请输入您的质疑内容：');
+                    if (question) {
+                        alert('您的质疑已提交，我们会在3个工作日内答复。');
+                        // 这里可以添加质疑到数据中
+                        this.mockData.sunshineVillage.questions.push({
+                            id: this.mockData.sunshineVillage.questions.length + 1,
+                            type: type,
+                            content: question,
+                            date: new Date().toISOString().split('T')[0],
+                            status: '待答复',
+                            reply: ''
+                        });
+                    }
+                },
+                submitReport() {
+                    if (!this.reportType) {
+                        alert('请选择问题类型');
+                        return;
+                    }
+                    if (!this.reportContent) {
+                        alert('请填写问题描述');
+                        return;
+                    }
+                    // 模拟提交报告
+                    alert('您的问题已提交，我们会尽快处理。');
+                    // 重置表单
+                    this.reportType = '';
+                    this.reportContent = '';
+                    this.reportContact = '';
+                    this.reportAnonymous = false;
+                },
+                // 整改督办相关方法
+                getMaterialIcon(type) {
+                    switch (type) {
+                        case 'pdf': return 'fas fa-file-pdf';
+                        case 'image': return 'fas fa-file-image';
+                        case 'word': return 'fas fa-file-word';
+                        case 'excel': return 'fas fa-file-excel';
+                        default: return 'fas fa-file';
+                    }
+                },
+                viewMaterial(material) {
+                    // 模拟查看材料
+                    alert('查看材料：' + material.name);
+                },
+                receiveIssue(id) {
+                    const issue = this.mockData.issues.find(issue => issue.id === id);
+                    if (issue) {
+                        issue.status = '整改中';
+                        issue.receiveDate = new Date().toISOString().split('T')[0];
+                        issue.records.push({
+                            date: issue.receiveDate,
+                            content: '责任单位已签收，开始整改'
+                        });
+                        alert('已签收问题');
+                    }
+                },
+                submitCorrection(id) {
+                    const issue = this.mockData.issues.find(issue => issue.id === id);
+                    if (issue) {
+                        issue.status = '待审核';
+                        issue.progress = 100;
+                        issue.records.push({
+                            date: new Date().toISOString().split('T')[0],
+                            content: '责任单位已提交整改报告，等待审核'
+                        });
+                        alert('已提交整改报告');
+                    }
+                },
+                approveCorrection(id) {
+                    const issue = this.mockData.issues.find(issue => issue.id === id);
+                    if (issue) {
+                        issue.status = '已办结';
+                        issue.completeDate = new Date().toISOString().split('T')[0];
+                        issue.records.push({
+                            date: issue.completeDate,
+                            content: '巡察办审核通过，问题已办结'
+                        });
+                        alert('审核通过，问题已办结');
+                    }
+                },
+                rejectCorrection(id) {
+                    const issue = this.mockData.issues.find(issue => issue.id === id);
+                    if (issue) {
+                        issue.status = '整改中';
+                        issue.records.push({
+                            date: new Date().toISOString().split('T')[0],
+                            content: '巡察办审核未通过，退回重办'
+                        });
+                        alert('已退回整改报告，请重新提交');
+                    }
+                },
+                showFallbackContent() {
+                    // 为地图容器添加备用内容
+                    if (this.$refs.mapChart) {
+                        // 尝试使用ECharts创建动态可视化
+                        try {
+                            // 初始化ECharts实例
+                            const mapChart = echarts.init(this.$refs.mapChart);
+                            
+                            // 村庄数据
+                            const villageData = [
+                                { name: '东村', value: 85, riskLevel: '高', x: 20, y: 30 },
+                                { name: '西村', value: 65, riskLevel: '中', x: 70, y: 40 },
+                                { name: '南村', value: 90, riskLevel: '高', x: 30, y: 70 },
+                                { name: '北村', value: 45, riskLevel: '低', x: 50, y: 20 },
+                                { name: '中村', value: 70, riskLevel: '中', x: 40, y: 50 }
+                            ];
+                            
+                            // 设置图表选项
+                            const option = {
+                                backgroundColor: 'transparent',
+                                title: {
+                                    text: '郑州村庄风险分布',
+                                    left: 'center',
+                                    textStyle: {
+                                        color: '#fff',
+                                        fontSize: 14
+                                    }
+                                },
+                                tooltip: {
+                                    trigger: 'item',
+                                    formatter: function(params) {
+                                        return params.name + '<br/>风险评分: ' + params.value + '<br/>风险等级: ' + params.data.riskLevel;
+                                    }
+                                },
+                                visualMap: {
+                                    type: 'continuous',
+                                    min: 0,
+                                    max: 100,
+                                    left: 'left',
+                                    top: 'bottom',
+                                    text: ['高', '低'],
+                                    textStyle: {
+                                        color: '#fff'
+                                    },
+                                    calculable: true,
+                                    inRange: {
+                                        color: ['#10b981', '#f59e0b', '#ef4444']
+                                    }
+                                },
+                                xAxis: {
+                                    type: 'value',
+                                    min: 0,
+                                    max: 100,
+                                    show: false
+                                },
+                                yAxis: {
+                                    type: 'value',
+                                    min: 0,
+                                    max: 100,
+                                    show: false
+                                },
+                                grid: {
+                                    left: '10%',
+                                    right: '10%',
+                                    top: '10%',
+                                    bottom: '20%'
+                                },
+                                series: [
+                                    {
+                                        name: '村庄风险',
+                                        type: 'scatter',
+                                        data: villageData.map(item => ({
+                                            name: item.name,
+                                            value: [item.x, item.y, item.value],
+                                            riskLevel: item.riskLevel
+                                        })),
+                                        symbolSize: function(val) {
+                                            return val[2] / 2 + 10;
+                                        },
+                                        label: {
+                                            show: true,
+                                            formatter: '{b}',
+                                            position: 'right',
+                                            color: '#fff',
+                                            fontSize: 12
+                                        },
+                                        itemStyle: {
+                                            color: function(params) {
+                                                if (params.data.riskLevel === '高') return '#ef4444';
+                                                if (params.data.riskLevel === '中') return '#f59e0b';
+                                                return '#10b981';
+                                            }
+                                        },
+                                        emphasis: {
+                                            itemStyle: {
+                                                shadowBlur: 10,
+                                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: '地图轮廓',
+                                        type: 'graph',
+                                        layout: 'none',
+                                        symbolSize: 0,
+                                        roam: true,
+                                        label: {
+                                            show: false
+                                        },
+                                        edgeSymbol: ['none', 'arrow'],
+                                        edgeSymbolSize: [4, 8],
+                                        edgeLabel: {
+                                            fontSize: 12
+                                        },
+                                        data: [
+                                            { name: '郑州', x: 50, y: 50 }
+                                        ],
+                                        links: [],
+                                        lineStyle: {
+                                            opacity: 0.9,
+                                            width: 2,
+                                            curveness: 0
+                                        }
+                                    }
+                                ]
+                            };
+                            
+                            // 绘制图表
+                            mapChart.setOption(option);
+                            
+                            // 添加动态效果
+                            setInterval(function() {
+                                // 随机更新风险值，模拟动态变化
+                                const updatedData = villageData.map(item => {
+                                    const newValue = Math.max(0, Math.min(100, item.value + (Math.random() * 10 - 5)));
+                                    let newRiskLevel = item.riskLevel;
+                                    if (newValue > 80) newRiskLevel = '高';
+                                    else if (newValue > 60) newRiskLevel = '中';
+                                    else newRiskLevel = '低';
+                                    return {
+                                        name: item.name,
+                                        value: [item.x, item.y, newValue],
+                                        riskLevel: newRiskLevel
+                                    };
+                                });
+                                
+                                mapChart.setOption({
+                                    series: [
+                                        {
+                                            data: updatedData
+                                        }
+                                    ]
+                                });
+                            }, 2000);
+                            
+                            // 响应式调整
+                            window.addEventListener('resize', function() {
+                                mapChart.resize();
+                            });
+                            
+                            console.log('ECharts动态可视化初始化成功');
+                        } catch (error) {
+                            console.error('ECharts初始化失败:', error);
+                            // 如果ECharts初始化失败，显示备用内容
+                            this.$refs.mapChart.innerHTML = `
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white;">
+                                    <div style="width: 100%; padding: 20px;">
+                                        <h3 style="text-align: center; margin-bottom: 20px;">郑州地理地图</h3>
+                                        <div style="position: relative; width: 100%; height: 180px; background-color: rgba(30, 58, 138, 0.3); border-radius: 8px; overflow: hidden;">
+                                            <!-- 模拟郑州地图轮廓 -->
+                                            <div style="position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 4px;"></div>
+                                            
+                                            <!-- 村庄位置标记 -->
+                                            <div style="position: absolute; top: 30%; left: 20%; background-color: #ef4444; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                                东村
+                                            </div>
+                                            <div style="position: absolute; top: 40%; left: 70%; background-color: #f59e0b; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                                西村
+                                            </div>
+                                            <div style="position: absolute; top: 70%; left: 30%; background-color: #ef4444; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                                南村
+                                            </div>
+                                            <div style="position: absolute; top: 20%; left: 50%; background-color: #10b981; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                                北村
+                                            </div>
+                                            <div style="position: absolute; top: 50%; left: 40%; background-color: #f59e0b; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                                中村
+                                            </div>
+                                            
+                                            <!-- 地图标记 -->
+                                            <div style="position: absolute; top: 5px; left: 5px; font-size: 12px; opacity: 0.8;">郑州</div>
+                                        </div>
+                                        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 20px; font-size: 12px;">
+                                            <div style="display: flex; align-items: center;">
+                                                <div style="width: 15px; height: 15px; background-color: #ef4444; border-radius: 50%; margin-right: 5px;"></div>
+                                                高风险
+                                            </div>
+                                            <div style="display: flex; align-items: center;">
+                                                <div style="width: 15px; height: 15px; background-color: #f59e0b; border-radius: 50%; margin-right: 5px;"></div>
+                                                中风险
+                                            </div>
+                                            <div style="display: flex; align-items: center;">
+                                                <div style="width: 15px; height: 15px; background-color: #10b981; border-radius: 50%; margin-right: 5px;"></div>
+                                                低风险
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // 为趋势图容器添加ECharts图表
+                    if (this.$refs.trendChart) {
+                        try {
+                            // 初始化ECharts实例
+                            const trendChart = echarts.init(this.$refs.trendChart);
+                            
+                            // 预警趋势数据
+                            const trendData = [5, 8, 12, 9, 15, 10];
+                            const months = ['10月', '11月', '12月', '1月', '2月', '3月'];
+                            
+                            // 设置图表选项
+                            const trendOption = {
+                                backgroundColor: 'transparent',
+                                title: {
+                                    text: '预警趋势',
+                                    left: 'center',
+                                    textStyle: {
+                                        color: '#fff',
+                                        fontSize: 14
+                                    }
+                                },
+                                tooltip: {
+                                    trigger: 'axis'
+                                },
+                                xAxis: {
+                                    type: 'category',
+                                    data: months,
+                                    axisLabel: {
+                                        color: '#fff'
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            color: 'rgba(255, 255, 255, 0.3)'
+                                        }
+                                    }
+                                },
+                                yAxis: {
+                                    type: 'value',
+                                    axisLabel: {
+                                        color: '#fff'
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            color: 'rgba(255, 255, 255, 0.3)'
+                                        }
+                                    },
+                                    splitLine: {
+                                        lineStyle: {
+                                            color: 'rgba(255, 255, 255, 0.1)'
+                                        }
+                                    }
+                                },
+                                series: [
+                                    {
+                                        data: trendData,
+                                        type: 'bar',
+                                        name: '预警数量',
+                                        itemStyle: {
+                                            color: '#3b82f6'
+                                        },
+                                        emphasis: {
+                                            itemStyle: {
+                                                color: '#60a5fa'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        data: trendData,
+                                        type: 'line',
+                                        name: '趋势',
+                                        smooth: true,
+                                        itemStyle: {
+                                            color: '#f59e0b'
+                                        },
+                                        lineStyle: {
+                                            width: 2
+                                        }
+                                    }
+                                ]
+                            };
+                            
+                            // 绘制图表
+                            trendChart.setOption(trendOption);
+                            
+                            // 响应式调整
+                            window.addEventListener('resize', function() {
+                                trendChart.resize();
+                            });
+                            
+                            console.log('预警趋势图表初始化成功');
+                        } catch (error) {
+                            console.error('预警趋势图表初始化失败:', error);
+                            // 如果ECharts初始化失败，显示备用内容
+                            this.$refs.trendChart.innerHTML = `
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white;">
+                                    <div style="width: 100%; padding: 20px;">
+                                        <h3 style="text-align: center; margin-bottom: 20px;">预警趋势</h3>
+                                        <div style="display: flex; justify-content: space-around; align-items: flex-end; height: 180px;">
+                                            <div style="text-align: center;">
+                                                <div style="width: 30px; background-color: #3b82f6; margin: 0 auto; height: 33%;"></div>
+                                                <div style="margin-top: 5px; font-size: 12px;">10月</div>
+                                                <div style="font-size: 12px;">5</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="width: 30px; background-color: #3b82f6; margin: 0 auto; height: 53%;"></div>
+                                                <div style="margin-top: 5px; font-size: 12px;">11月</div>
+                                                <div style="font-size: 12px;">8</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="width: 30px; background-color: #3b82f6; margin: 0 auto; height: 80%;"></div>
+                                                <div style="margin-top: 5px; font-size: 12px;">12月</div>
+                                                <div style="font-size: 12px;">12</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="width: 30px; background-color: #3b82f6; margin: 0 auto; height: 60%;"></div>
+                                                <div style="margin-top: 5px; font-size: 12px;">1月</div>
+                                                <div style="font-size: 12px;">9</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="width: 30px; background-color: #3b82f6; margin: 0 auto; height: 100%;"></div>
+                                                <div style="margin-top: 5px; font-size: 12px;">2月</div>
+                                                <div style="font-size: 12px;">15</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="width: 30px; background-color: #3b82f6; margin: 0 auto; height: 67%;"></div>
+                                                <div style="margin-top: 5px; font-size: 12px;">3月</div>
+                                                <div style="font-size: 12px;">10</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // 为参与度图表容器添加ECharts图表
+                    if (this.$refs.participationChart) {
+                        try {
+                            // 初始化ECharts实例
+                            const participationChart = echarts.init(this.$refs.participationChart);
+                            
+                            // 群众参与度数据
+                            const participationData = [
+                                { village: '东村', access: 120, report: 15 },
+                                { village: '西村', access: 95, report: 8 },
+                                { village: '南村', access: 150, report: 20 },
+                                { village: '北村', access: 80, report: 5 },
+                                { village: '中村', access: 105, report: 12 }
+                            ];
+                            
+                            const villages = participationData.map(item => item.village);
+                            const accessData = participationData.map(item => item.access);
+                            const reportData = participationData.map(item => item.report);
+                            
+                            // 设置图表选项
+                            const participationOption = {
+                                backgroundColor: 'transparent',
+                                title: {
+                                    text: '群众参与度',
+                                    left: 'center',
+                                    textStyle: {
+                                        color: '#fff',
+                                        fontSize: 14
+                                    }
+                                },
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        type: 'shadow'
+                                    }
+                                },
+                                legend: {
+                                    data: ['访问量', '反映量'],
+                                    textStyle: {
+                                        color: '#fff'
+                                    },
+                                    bottom: 0
+                                },
+                                xAxis: {
+                                    type: 'category',
+                                    data: villages,
+                                    axisLabel: {
+                                        color: '#fff'
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            color: 'rgba(255, 255, 255, 0.3)'
+                                        }
+                                    }
+                                },
+                                yAxis: {
+                                    type: 'value',
+                                    axisLabel: {
+                                        color: '#fff'
+                                    },
+                                    axisLine: {
+                                        lineStyle: {
+                                            color: 'rgba(255, 255, 255, 0.3)'
+                                        }
+                                    },
+                                    splitLine: {
+                                        lineStyle: {
+                                            color: 'rgba(255, 255, 255, 0.1)'
+                                        }
+                                    }
+                                },
+                                series: [
+                                    {
+                                        name: '访问量',
+                                        type: 'bar',
+                                        data: accessData,
+                                        itemStyle: {
+                                            color: '#3b82f6'
+                                        }
+                                    },
+                                    {
+                                        name: '反映量',
+                                        type: 'bar',
+                                        data: reportData,
+                                        itemStyle: {
+                                            color: '#ef4444'
+                                        }
+                                    }
+                                ]
+                            };
+                            
+                            // 绘制图表
+                            participationChart.setOption(participationOption);
+                            
+                            // 响应式调整
+                            window.addEventListener('resize', function() {
+                                participationChart.resize();
+                            });
+                            
+                            console.log('群众参与度图表初始化成功');
+                        } catch (error) {
+                            console.error('群众参与度图表初始化失败:', error);
+                            // 如果ECharts初始化失败，显示备用内容
+                            this.$refs.participationChart.innerHTML = `
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white;">
+                                    <div style="width: 100%; padding: 20px;">
+                                        <h3 style="text-align: center; margin-bottom: 20px;">群众参与度</h3>
+                                        <div style="display: flex; justify-content: space-around; align-items: flex-end; height: 180px;">
+                                            <div style="text-align: center;">
+                                                <div style="display: flex; justify-content: center; gap: 5px;">
+                                                    <div style="width: 15px; background-color: #3b82f6; height: 80%;"></div>
+                                                    <div style="width: 15px; background-color: #ef4444; height: 75%;"></div>
+                                                </div>
+                                                <div style="margin-top: 5px; font-size: 12px;">东村</div>
+                                                <div style="font-size: 10px; opacity: 0.8;">访问120 反映15</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="display: flex; justify-content: center; gap: 5px;">
+                                                    <div style="width: 15px; background-color: #3b82f6; height: 63%;"></div>
+                                                    <div style="width: 15px; background-color: #ef4444; height: 40%;"></div>
+                                                </div>
+                                                <div style="margin-top: 5px; font-size: 12px;">西村</div>
+                                                <div style="font-size: 10px; opacity: 0.8;">访问95 反映8</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="display: flex; justify-content: center; gap: 5px;">
+                                                    <div style="width: 15px; background-color: #3b82f6; height: 100%;"></div>
+                                                    <div style="width: 15px; background-color: #ef4444; height: 100%;"></div>
+                                                </div>
+                                                <div style="margin-top: 5px; font-size: 12px;">南村</div>
+                                                <div style="font-size: 10px; opacity: 0.8;">访问150 反映20</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="display: flex; justify-content: center; gap: 5px;">
+                                                    <div style="width: 15px; background-color: #3b82f6; height: 53%;"></div>
+                                                    <div style="width: 15px; background-color: #ef4444; height: 25%;"></div>
+                                                </div>
+                                                <div style="margin-top: 5px; font-size: 12px;">北村</div>
+                                                <div style="font-size: 10px; opacity: 0.8;">访问80 反映5</div>
+                                            </div>
+                                            <div style="text-align: center;">
+                                                <div style="display: flex; justify-content: center; gap: 5px;">
+                                                    <div style="width: 15px; background-color: #3b82f6; height: 70%;"></div>
+                                                    <div style="width: 15px; background-color: #ef4444; height: 60%;"></div>
+                                                </div>
+                                                <div style="margin-top: 5px; font-size: 12px;">中村</div>
+                                                <div style="font-size: 10px; opacity: 0.8;">访问105 反映12</div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 20px; font-size: 12px;">
+                                            <div style="display: flex; align-items: center;">
+                                                <div style="width: 15px; height: 15px; background-color: #3b82f6; margin-right: 5px;"></div>
+                                                访问量
+                                            </div>
+                                            <div style="display: flex; align-items: center;">
+                                                <div style="width: 15px; height: 15px; background-color: #ef4444; margin-right: 5px;"></div>
+                                                反映量
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+            },
+            mounted() {
+                console.log('组件挂载完成，开始显示备用内容');
+                // 初始化村庄数据到全局变量
+                if (window.initVillagesData) {
+                    window.initVillagesData(this.mockData.villages);
+                    console.log('村庄数据已初始化到全局变量');
+                }
+                
+                // 初始化阳光村务默认值
+                if (this.mockData.sunshineVillage.finance.quarters.length > 0) {
+                    this.selectedQuarter = this.mockData.sunshineVillage.finance.quarters[0];
+                }
+                if (this.mockData.sunshineVillage.subsidies.length > 0) {
+                    this.selectedMonth = this.mockData.sunshineVillage.subsidies[0];
+                }
+                
+                // 立即显示备用内容，确保所有数据都能正常展示
+                try {
+                    this.showFallbackContent();
+                    console.log('备用内容显示成功');
+                } catch (error) {
+                    console.error('显示备用内容失败:', error);
+                }
+            },
+            watch: {
+                // 监听currentTab变化，当切换到可视化大屏时重新显示内容
+                currentTab(newTab) {
+                    if (newTab === 5) {
+                        // 延迟一下确保DOM已经更新
+                        setTimeout(() => {
+                            this.showFallbackContent();
+                            console.log('切换到可视化大屏，重新显示内容');
+                        }, 100);
+                    }
+                }
+            }
+        });
+        
+        // 简化挂载逻辑，确保Vue应用正确初始化
+        console.log('开始挂载Vue应用');
+        try {
+            app.mount('#app');
+            console.log('Vue应用挂载成功');
+        } catch (error) {
+            console.error('Vue应用挂载失败:', error);
+        }
+    </script>
+</body>
+</html>
